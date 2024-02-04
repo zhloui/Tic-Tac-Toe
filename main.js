@@ -1,99 +1,111 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // Constants
-    const COLORS = {
-      'null': 'white',
-      '1': '#FFA500', // Orange
-      '-1': '#8A2BE2', // Purple
-    };
+// ----- Constants -----
+const COLORS = {
+    'null': 'white',
+    '1': 'purple',
+    '-1': 'orange',
+  };
   
-    const WINNING_COMBINATIONS = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-      [0, 4, 8], [2, 4, 6]             // Diagonals
-    ];
+  const WINNING_COMBINATIONS = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+    [0, 4, 8], [2, 4, 6]             // Diagonals
+  ];
   
-    // State variables
-    let board = Array(9).fill(null);
-    let turn = 1;
-    let winner = null;
+  // ----- State Variables -----
+  let board;   // array of 9 elements representing the squares
+  let turn;    // 1 or -1
+  let winner;  // null = no winner; 1 or -1 = winner; 'T' = Tie
   
-    // Cached elements
-    const boardEl = document.getElementById('board');
-    const messageEl = document.getElementById('message');
-    const resetBtn = document.getElementById('resetBtn');
+  // ----- Cached Elements -----
+  const squares = document.querySelectorAll('.square');
+  const messageEl = document.getElementById('message');
   
-    // Event listeners
-    boardEl.addEventListener('click', handleSquareClick);
-    resetBtn.addEventListener('click', resetGame);
+  // ----- Event Listeners -----
+  document.getElementById('board').addEventListener('click', handleSquareClick);
+  document.getElementById('resetBtn').addEventListener('click', init);
   
-    // Initial rendering
+  // ----- Functions -----
+  
+  // 1) Define required constants
+  // ...
+  
+  // 2) Define required variables
+  // ...
+  
+  // 3) Store elements on the page
+  // ...
+  
+  // 4) Upon loading the app
+  init();
+  
+  // 5) Handle a player clicking a square
+  function handleSquareClick(event) {
+    const squareIndex = Array.from(squares).indexOf(event.target);
+  
+    // Guards...
+    if (board[squareIndex] !== null || winner !== null) return;
+  
+    // Update the board
+    board[squareIndex] = turn;
+  
+    // Switch player turn
+    turn *= -1;
+  
+    // Check for winner
+    checkForWinner();
+  
+    // Check for tie
+    checkForTie();
+  
+    // Render the state
     render();
+  }
   
-    // Functions
-    function render() {
-      // Render the board
-      boardEl.innerHTML = '';
-      board.forEach((value, index) => {
-        const square = document.createElement('div');
-        square.className = 'square';
-        square.style.backgroundColor = COLORS[value];
-        square.innerText = value === null ? '' : value === 1 ? 'X' : 'O';
-        square.dataset.index = index;
-        boardEl.appendChild(square);
-      });
+  // 6) Handle a player clicking the replay button
+  function init() {
+    // Initialize state variables
+    board = Array(9).fill(null);
+    turn = 1;
+    winner = null;
   
-      // Render the game message
-      if (winner === null) {
-        messageEl.textContent = `Player ${turn === 1 ? 'X' : 'O'}'s turn`;
-      } else if (winner === 'T') {
-        messageEl.textContent = "It's a Tie!";
-      } else {
-        messageEl.textContent = `Player ${winner === 1 ? 'X' : 'O'} wins!`;
+    // Render state variables
+    render();
+  }
+  
+  function checkForWinner() {
+    for (const combo of WINNING_COMBINATIONS) {
+      const [a, b, c] = combo;
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+        winner = board[a];
+        break;
       }
     }
+  }
   
-    function handleSquareClick(event) {
-      if (winner !== null) return; // Game is over
-  
-      const index = event.target.dataset.index;
-      if (board[index] !== null) return; // Square already taken
-  
-      board[index] = turn;
-      turn *= -1; // Switch player turn
-  
-      // Check for a winner
-      winner = checkWinner();
-  
-      // Check for a tie
-      if (winner === null && !board.includes(null)) {
-        winner = 'T'; // It's a tie
-      }
-  
-      render();
+  function checkForTie() {
+    if (!board.includes(null) && winner === null) {
+      winner = 'T';
     }
+  }
   
-    function checkWinner() {
-      for (const combo of WINNING_COMBINATIONS) {
-        const [a, b, c] = combo;
-        if (board[a] !== null && board[a] === board[b] && board[a] === board[c]) {
-          return board[a];
-        }
-      }
-      return null;
+  function render() {
+    renderBoard();
+    renderMessage();
+  }
+  
+  function renderBoard() {
+    board.forEach((value, index) => {
+      squares[index].style.backgroundColor = COLORS[value];
+    });
+  }
+  
+  function renderMessage() {
+    if (winner === 'T') {
+      messageEl.innerText = "It's a Tie!";
+    } else if (winner) {
+      messageEl.innerHTML = `<span style="color: ${COLORS[winner]}">${COLORS[winner].toUpperCase()}</span> Wins!`;
+    } else {
+      messageEl.innerHTML = `<span style="color: ${COLORS[turn]}">${COLORS[turn].toUpperCase()}</span>'s Turn`;
     }
-  
-    function resetGame() {
-      // Reset state variables
-      board = Array(9).fill(null);
-      turn = 1;
-      winner = null;
-      render();
-  
-      // Reset square colors
-      const squares = document.querySelectorAll('.square');
-      squares.forEach(square => {
-        square.style.backgroundColor = COLORS['null'];
-      });
-    }
-  });
+  }
   
